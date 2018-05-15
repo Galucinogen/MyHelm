@@ -8,7 +8,7 @@ TL;DR;
 ------
 
 ```console
-$ helm install statefulset --name statefulset
+$ helm install statefulset --name postgresql-statefulset
 ```
 
 Introduction
@@ -16,7 +16,7 @@ Introduction
 
 This is an example of running the Crunchy PostgreSQL containers using the Helm project! More examples of the Crunchy Containers for PostgreSQL can be found at the [GitHub repository](https://github.com/CrunchyData/crunchy-containers).
 
-This example deploys a statefulset named *pgset*.  The statefulset
+This example deploys a postgresql-statefulset named *pgset*.  The statefulset
 is a new feature in Kubernetes as of version 1.5.  Statefulsets have
 replaced PetSets going forward.
 
@@ -57,7 +57,7 @@ Installing the Chart
 The chart can be installed as follows:
 
 ```console
-$ helm install statefulset --name statefulset
+$ helm install statefulset --name postgresql-statefulset
 ```
 
 The command deploys both primary and replica pods on the Kubernetes cluster in the default configuration.
@@ -83,16 +83,16 @@ You can scale the number of containers using this command, this will
 essentially create an additional replica database:
 
 ```console
-$ kubectl scale statefulset pgset-primary --replicas=3
+$ kubectl scale postgresql-statefulset pgset-primary --replicas=3
 ```
 
 Uninstalling the Chart
 ----------------------
 
-To uninstall/delete the `statefulset` deployment:
+To uninstall/delete the `postgresql-statefulset` deployment:
 
 ```console
-$ helm del --purge statefulset
+$ helm del --purge postgresql-statefulset
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -103,7 +103,7 @@ Configuration
 See `values.yaml` for configuration notes. Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
 ```console
-$ helm install statefulset --name statefulset \
+$ helm install statefulset --name postgresql-statefulset \
   --set Image.tag=centos7-9.6.9-1.8.3
 ```
 
@@ -134,7 +134,7 @@ The above command changes the image tag of the container from the default of `ce
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install statefulset --name statefulset  \
+$ helm install statefulset --name postgresql-statefulset  \
   -f values.yaml
 ```
 
