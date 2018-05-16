@@ -1,0 +1,9 @@
+categories:
+- Databases
+questions:
+- variable: RootPassword
+  default: ""
+  description: "password will be auto-generated if not specified"
+  type: password
+  label: Root Password
+  group: "PostgreSQL Settings"
