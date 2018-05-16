@@ -7,3 +7,26 @@ questions:
   type: password
   label: Root Password
   group: "PostgreSQL Settings"
+- variable: defaultImage
+  default: "true"
+  description: "Use default Docker image"
+  label: Use Default Image
+  type: boolean
+  show_subquestion_if: false
+  group: "Container Images"
+  subquestions:
+  - variable: image.repository
+    default: "crunchydata"
+    description: "PostgreSQL image name"
+    type: string
+    label: PostgreSQL Image Name
+  - variable: image.container
+    default: "crunchy-postgres"
+    description: "PostgreSQL image name"
+    type: string
+    label: PostgreSQL Image Name
+  - variable: image.tag
+    default: "centos7-10.4-1.8.3"
+    description: "PostgreSQL image tag"
+    type: string
+    label: Image Tag
