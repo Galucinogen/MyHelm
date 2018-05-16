@@ -11,7 +11,7 @@
         "capacity": {
             "storage": "{{ .Values.pv.storage }}"
         },
-        "accessModes": ["{{ .Values.persistence.accessModes }}"],
+        "accessModes": "{{ .Values.persistence.accessModes }}",
         "nfs": {
             "path": "{{ .Values.nfs.path }}",
             "server": "{{ .Values.nfs.server }}"
