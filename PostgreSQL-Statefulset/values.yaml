@@ -23,9 +23,12 @@ pvc:
 resources:
   cpu: 200m
   memory: 512Mi
-  persistence:
+persistence:
     storageClass: standard
     storageClassType: standard
     accessModes:
     - ReadWriteMany
     size: 100m
+nfs:
+  server: 10.0.0.11
+  path: /nfsshare
