@@ -26,8 +26,7 @@ resources:
 persistence:
     storageClass: standard
     storageClassType: standard
-    accessModes:
-    - ReadWriteMany
+    accessModes: ReadWriteMany
     size: 100m
 nfs:
   server: 10.0.0.11
