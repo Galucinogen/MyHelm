@@ -37,15 +37,15 @@ spec:
         - name: PG_PRIMARY_PORT
           value: "{{.Values.container.port}}"
         - name: PG_PRIMARY_PASSWORD
-          value: "{{.Values.credentials.primary}}"
+          value: "{{.Values.PrimaryPassword}}"
         - name: PG_USER
           value: testuser
         - name: PG_PASSWORD
-          value: "{{.Values.credentials.user}}"
+          value: "{{.Values.UserPassword}}"
         - name: PG_DATABASE
           value: userdb
         - name: PG_ROOT_PASSWORD
-          value: "{{.Values.credentials.root}}"
+          value: "{{.Values.RootPassword}}"
         resources:
           requests:
             cpu: {{ .Values.resources.cpu }}

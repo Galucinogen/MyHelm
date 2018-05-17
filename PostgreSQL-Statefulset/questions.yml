@@ -42,9 +42,21 @@ questions:
     description: "NFS path"
     type: string
     label: NFS Path
+- variable: PrimaryPassword
+  default: "password"
+  description: "password will be auto-generated if not specified"
+  type: password
+  label: Primary Password
+  group: "PostgreSQL Settings"
 - variable: RootPassword
-  default: ""
+  default: "password"
   description: "password will be auto-generated if not specified"
   type: password
   label: Root Password
+  group: "PostgreSQL Settings"
+- variable: UserPassword
+  default: "password"
+  description: "password will be auto-generated if not specified"
+  type: password
+  label: User Password
   group: "PostgreSQL Settings"
