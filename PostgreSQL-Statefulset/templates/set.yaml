@@ -27,7 +27,7 @@ spec:
         - name: PGHOST
           value: /tmp
         - name: PG_PRIMARY_USER
-          value: primaryuser
+          value: "{{.Values.PrimaryUser}}"
         - name: PG_MODE
           value: set
         - name: PG_PRIMARY_HOST

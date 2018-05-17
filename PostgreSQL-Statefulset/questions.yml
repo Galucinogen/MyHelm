@@ -60,3 +60,9 @@ questions:
   type: password
   label: User Password
   group: "PostgreSQL Settings"
+- variable: PrimaryUser
+  default: "primaryuser"
+  description: "Primary user"
+  type: string
+  label: Primary User
+  group: "PostgreSQL Settings"
