@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: default
+  labels:
+    app: vault
+    tier: db
+spec:
+  serviceName: "vault-vault"
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: vault
+      tier: db
+  template:
+    metadata:
+      labels:
+        app: vault
+        tier: db
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vault
+              topologyKey: kubernetes.io/hostname
+      serviceAccountName: vault
+      securityContext:
+        capabilities:
+          add:
+            - IPC_LOCK
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: vault-data
+      - name: config
+        configMap:
+          name: vault
+      containers:
+      - name: vault
+        image: vault:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8200
+        args:
+        - server
+        - "-config=/etc/vault/config.hcl"
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+        volumeMounts:
+        - name: datadir
+          mountPath: /etc/vault
+          readOnly: true
+      - name: initializer
+        image: vault:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - "-c"
+        - |
+          apk update
+          apk add jq
+          vault operator init -status
+          ret=$?
+          # exit code of 2 means not yet initialized
+          if [ $ret -eq 2 ] ; then
+            echo Initializing vault now...
+            vault operator init -key-threshold=1 -key-shares=1 -format=json 2>/dev/null > /etc/vault/vault-init.json
+            ret=$?
+            if [ $ret -ne 0 ] ; then
+              echo "ERROR: failed to initialize vault (Exit status: $ret)" 1>&2
+              exit $ret
+            fi
+          fi
+          vault status
+          ret=$?
+          # The exit code reflects the seal status:
+          # - 0 - unsealed
+          # - 1 - error
+          # - 2 - sealed
+          if [ $ret -eq 2 ] ; then
+            echo Unsealing vault now...
+            vault operator unseal $( jq -r '.unseal_keys_b64[0]' /etc/vault/vault-init.json ) &>/dev/null
+            ret=$?
+            if [ $ret -ne 0 ] ; then
+              echo "ERROR: failed to unseal vault (Exit status: $ret)" 1>&2
+              exit $ret
+            fi
+            vault status
+          fi
+
+          # activate/configure kubernetes policies
+          export VAULT_TOKEN=$( jq -r '.root_token' /etc/vault/vault-init.json )
+          vault auth list | grep kubernetes &>/dev/null
+          ret=$?
+          if [ $ret -ne 0 ] ; then
+            vault auth enable kubernetes
+            vault write auth/kubernetes/config \
+              kubernetes_host="https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT" \
+              token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token \
+              kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            for app in api compiler event notifications pricing signer websockets; do
+              vault write auth/kubernetes/role/$app \
+                bound_service_account_names=ep-$app \
+                bound_service_account_namespaces=default \
+                policies=$app \
+                ttl=1h
+            done
+            vault write auth/kubernetes/role/runner \
+              bound_service_account_names=runner \
+              bound_service_account_namespaces=default \
+              policies=default,api,signer,compiler,event,notifications,pricing,websockets \
+              ttl=1h
+          fi
+          unset VAULT_TOKEN
+
+          # done initializing, nothing to be done anymore
+          echo Initialization process done. Sleeping...
+          while true; do sleep 10000; done
+        env:
+        - name: VAULT_ADDR
+          value: http://127.0.0.1:8200/
+        - name: VAULT_CLI_NO_COLOR
+          value: "true"
+
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "10Gi"
+      storageClassName: "database"
